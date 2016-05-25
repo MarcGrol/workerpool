@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// WorkerFunc describes the signature of a function that executes on a worker in the pool
 type WorkerFunc func(interface{})
 
 type task struct {
@@ -70,6 +71,7 @@ func terminateWorker(w *worker) {
 	w.quit <- true
 }
 
+// WorkerPool is a collection of goroutines waiting for work
 type WorkerPool struct {
 	wg               sync.WaitGroup
 	mutex            sync.Mutex
@@ -78,6 +80,7 @@ type WorkerPool struct {
 	availableWorkers *workerQueue
 }
 
+// NewWorkerPool crates a new worker pool
 func NewWorkerPool(size int) *WorkerPool {
 	pool := WorkerPool{
 		workers:          make([]*worker, size),
@@ -87,6 +90,7 @@ func NewWorkerPool(size int) *WorkerPool {
 	return &pool
 }
 
+// Start starts the goroutines of a pool
 func (pool *WorkerPool) Start() {
 	if pool.isUp() == false {
 
@@ -111,6 +115,7 @@ func (pool *WorkerPool) Start() {
 	}
 }
 
+// Stop terminates the goroutines of a pool
 func (pool *WorkerPool) Stop() {
 	if pool.isUp() == true {
 
@@ -133,6 +138,7 @@ func (pool *WorkerPool) Stop() {
 	}
 }
 
+// Execute queeues a package of work for execution by a goroutine in the pool
 func (pool *WorkerPool) Execute(f WorkerFunc, data interface{}, timeoutSecs int) error {
 	// only accept work when pool is up
 	if pool.isUp() == false {
@@ -167,13 +173,13 @@ type workerQueue struct {
 	pipe chan *worker
 }
 
-func (queue *workerQueue) open(size int) {
+func (q *workerQueue) open(size int) {
 	// need buffered channel to allow for multiple writes without a read on the other side
-	queue.pipe = make(chan *worker, size)
+	q.pipe = make(chan *worker, size)
 }
 
-func (queue *workerQueue) close() {
-	close(queue.pipe)
+func (q *workerQueue) close() {
+	close(q.pipe)
 }
 
 func (q *workerQueue) addTail(worker *worker) {

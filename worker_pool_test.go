@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-const (
-	TIMEOUT_MSEC = 1
-)
-
 func TestUnstartedPool(t *testing.T) {
 	pool := NewWorkerPool(1)
 	err := doitOnce(pool, "40", 0, 1)
@@ -116,11 +112,11 @@ func (r *Result) add(msg string) {
 	r.messages = append(r.messages, msg)
 }
 
-func bulk(t *testing.T, pool *WorkerPool, msg_count int, timeout_sec int) {
+func bulk(t *testing.T, pool *WorkerPool, msgCount int, timeoutSec int) {
 
 	r := Result{}
 
-	for i := 0; i < msg_count; i++ {
+	for i := 0; i < msgCount; i++ {
 		r.Add(1)
 		payload := fmt.Sprintf("message_%d", i)
 		pool.Execute(
@@ -129,16 +125,16 @@ func bulk(t *testing.T, pool *WorkerPool, msg_count int, timeout_sec int) {
 				r.Done()
 			},
 			payload,
-			timeout_sec)
+			timeoutSec)
 	}
 
 	r.Wait()
 
-	if len(r.messages) != msg_count {
-		t.Errorf("expected: %d, actual %d", msg_count, len(r.messages))
+	if len(r.messages) != msgCount {
+		t.Errorf("expected: %d, actual %d", msgCount, len(r.messages))
 	}
 
-	for i := 0; i < msg_count; i++ {
+	for i := 0; i < msgCount; i++ {
 		found := false
 		for _, msg := range r.messages {
 			if msg == fmt.Sprintf("message_%d", i) {
