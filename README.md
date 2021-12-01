@@ -8,9 +8,9 @@
         defer pool.Stop()
 
         go pool.Execute(
-            func(data interface{}) {
+             func(data interface{}) {
     			time.Sleep(time.Duration(2) * time.Second)
-            },
-	    "first",
-            1)
+             },
+             "first",
+             1)
     }
